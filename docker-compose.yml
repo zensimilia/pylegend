@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  bot:
+    build: .
+    container_name: pylegend
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - inet
+
+networks:
+  inet:
+    driver: bridge
