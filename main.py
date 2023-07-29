@@ -52,7 +52,10 @@ class BotClient(discord.Client):
         if member.id == self.user.id:
             return
 
-        if not after.channel or after.channel.id != self.voice_channel.id:
+        if not after.channel or (
+            after.channel.id != self.voice_channel.id
+            and before.channel.id == self.voice_channel.id
+        ):
             log.info('Member %s <%d> left', member.name, member.id)
 
         client_in_voice_channel = self.voice_clients or False
