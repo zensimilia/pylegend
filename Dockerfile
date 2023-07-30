@@ -5,6 +5,6 @@ WORKDIR /home/bot/pylegend
 ADD requirements.txt .
 RUN pip install -U pip --no-cache-dir
 RUN pip install -r requirements.txt --no-cache-dir
-ADD --chown=bot:bot --chmod=660 . .
+ADD --chown=bot:bot . .
 USER bot
 CMD [ "python", "main.py" ]

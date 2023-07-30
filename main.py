@@ -49,16 +49,25 @@ class BotClient(discord.Client):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ) -> None:
-        if member.id == self.user.id:
+        # ignore bot
+        if member.bot:
             return
 
-        if not after.channel or (
-            after.channel.id != self.voice_channel.id
-            and before.channel.id == self.voice_channel.id
-        ):
-            log.info('Member %s <%d> left', member.name, member.id)
+        # ignore muted or deafened
+        if before.channel and after.channel:
+            if before.channel.id == after.channel.id:
+                return
 
-        client_in_voice_channel = self.voice_clients or False
+        # leaving of the member
+        if before.channel and before.channel.id == self.voice_channel.id:
+            log.info('Member %s <%d> left', member.name, member.id)
+            if (
+                len(self.voice_channel.members) == 1
+                and await self.is_in_voice_channel
+            ):
+                return await self.leave_voice_channel()
+
+        # joining of the member
         if after.channel and after.channel.id == self.voice_channel.id:
             log.info('Member %s <%d> joined', member.name, member.id)
             await self.join_voice_channel(self.voice_channel)
@@ -66,11 +75,6 @@ class BotClient(discord.Client):
                 discord.FFmpegOpusAudio(AUDIO_URL, **FFMPEG_OPTIONS)
             )
             return
-        if (
-            client_in_voice_channel
-            and len(client_in_voice_channel[0].channel.members) == 1
-        ):
-            await self.leave_voice_channel()
 
     async def dm_to_admin(self, message: str, **kwargs) -> discord.Message:
         return await self.admin_user.send(message, **kwargs)
@@ -94,6 +98,13 @@ class BotClient(discord.Client):
         await self.voice_client.disconnect(force=True)
         self.voice_client = None
         log.warning('Left voice channel')
+
+    @property
+    async def is_in_voice_channel(self) -> bool:
+        voice_client: discord.VoiceClient = discord.utils.get(
+            self.voice_clients, channel=self.voice_channel
+        )
+        return voice_client and voice_client.is_connected()
 
 
 def main():
