@@ -116,7 +116,7 @@ def main():
     intents = discord.Intents.default()
 
     client = BotClient(intents=intents)
-    client.run(BOT_TOKEN, log_handler=None)
+    client.run(BOT_TOKEN, log_handler=None, reconnect=True)
 
 
 if __name__ == '__main__':
